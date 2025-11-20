@@ -1,0 +1,1173 @@
+{
+	"info": {
+		"_postman_id": "echotree-complete-api-2025",
+		"name": "Echo Tree - Complete API Collection",
+		"description": "Complete API collection for all Echo Tree services with automatic token management",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "🔐 Authentication",
+			"item": [
+				{
+					"name": "Register New User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"token\", jsonData.data.token);",
+									"    pm.environment.set(\"userId\", jsonData.data.user.user_id);",
+									"    console.log(\"✅ Token saved:\", jsonData.data.token);",
+									"    console.log(\"✅ User ID saved:\", jsonData.data.user.user_id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"testuser{{$randomInt}}\",\n  \"password\": \"test123456\",\n  \"email\": \"testuser{{$randomInt}}@example.com\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/users",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "users"]
+						},
+						"description": "Create a new user account with auto-generated random username"
+					}
+				},
+				{
+					"name": "Login (Admin)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"token\", jsonData.data.token);",
+									"    pm.environment.set(\"userId\", jsonData.data.user.user_id);",
+									"    console.log(\"✅ Admin token saved\");",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123456\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/sessions",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "sessions"]
+						},
+						"description": "Login as admin user"
+					}
+				},
+				{
+					"name": "Login (Custom User)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"token\", jsonData.data.token);",
+									"    pm.environment.set(\"userId\", jsonData.data.user.user_id);",
+									"    console.log(\"✅ Token saved\");",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"test123456\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/sessions",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "sessions"]
+						},
+						"description": "Login with custom username/password"
+					}
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/sessions/{{sessionId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "sessions", "{{sessionId}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "💬 Chat & Messages",
+			"item": [
+				{
+					"name": "Create New Chat",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"chatId\", jsonData.data.chat_id);",
+									"    console.log(\"✅ Chat ID saved:\", jsonData.data.chat_id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"My Chat Session\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/chats",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "chats"]
+						}
+					}
+				},
+				{
+					"name": "Get All Chats (Paginated)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/chats?limit=10&offset=0&sortBy=updated_at&sortOrder=desc",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "chats"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								},
+								{
+									"key": "sortBy",
+									"value": "updated_at"
+								},
+								{
+									"key": "sortOrder",
+									"value": "desc"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Specific Chat",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/chats/{{chatId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "chats", "{{chatId}}"]
+						}
+					}
+				},
+				{
+					"name": "Update Chat",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"closed_at\": \"2025-11-19T12:00:00.000Z\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/chats/{{chatId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "chats", "{{chatId}}"]
+						}
+					}
+				},
+				{
+					"name": "Delete Chat",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/chats/{{chatId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "chats", "{{chatId}}"]
+						}
+					}
+				},
+				{
+					"name": "Send Message",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"messageId\", jsonData.data.user_message.message_id);",
+									"    console.log(\"✅ Message ID saved:\", jsonData.data.user_message.message_id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"content\": \"Hello, wise tree. I'm feeling anxious today.\",\n  \"mood\": 2,\n  \"energy\": 3\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/chats/{{chatId}}/messages",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "chats", "{{chatId}}", "messages"]
+						},
+						"description": "mood and energy are numbers 1-5"
+					}
+				},
+				{
+					"name": "Get Chat Messages",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/chats/{{chatId}}/messages?limit=20&offset=0",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "chats", "{{chatId}}", "messages"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "20"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Specific Message",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/messages/{{messageId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "messages", "{{messageId}}"]
+						}
+					}
+				},
+				{
+					"name": "Update Message",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"content\": \"Updated message content\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/messages/{{messageId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "messages", "{{messageId}}"]
+						}
+					}
+				},
+				{
+					"name": "Delete Message",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/messages/{{messageId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "messages", "{{messageId}}"]
+						}
+					}
+				},
+				{
+					"name": "Add Feeling Labels",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"labels\": [\"anxious\", \"hopeful\", \"grateful\"]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/chats/{{chatId}}/messages/{{messageId}}/feelings",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "chats", "{{chatId}}", "messages", "{{messageId}}", "feelings"]
+						}
+					}
+				},
+				{
+					"name": "Get Feeling Labels",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/chats/{{chatId}}/messages/{{messageId}}/feelings",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "chats", "{{chatId}}", "messages", "{{messageId}}", "feelings"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "📝 Notes & Tree Hole",
+			"item": [
+				{
+					"name": "Create Note from Chat",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"noteId\", jsonData.data.note_id);",
+									"    console.log(\"✅ Note ID saved:\", jsonData.data.note_id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"chat_id\": \"{{chatId}}\",\n  \"message_ids\": [\"{{messageId}}\"],\n  \"excerpt\": \"My thoughts today\",\n  \"visibility\": \"public\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/notes",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "notes"]
+						},
+						"description": "visibility: public or private"
+					}
+				},
+				{
+					"name": "Get All Notes (Public)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/notes?limit=20&offset=0&visibility=public&sortBy=posted_at&sortOrder=desc",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "notes"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "20"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								},
+								{
+									"key": "visibility",
+									"value": "public"
+								},
+								{
+									"key": "sortBy",
+									"value": "posted_at"
+								},
+								{
+									"key": "sortOrder",
+									"value": "desc"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Specific Note",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/notes/{{noteId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "notes", "{{noteId}}"]
+						}
+					}
+				},
+				{
+					"name": "Update Note",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"visibility\": \"private\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/notes/{{noteId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "notes", "{{noteId}}"]
+						}
+					}
+				},
+				{
+					"name": "Delete Note",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/notes/{{noteId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "notes", "{{noteId}}"]
+						}
+					}
+				},
+				{
+					"name": "Add Topic Tag",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"tag_text\": \"anxiety\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/notes/{{noteId}}/topics",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "notes", "{{noteId}}", "topics"]
+						},
+						"description": "Add one tag at a time"
+					}
+				},
+				{
+					"name": "Get Note Topics",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/notes/{{noteId}}/topics",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "notes", "{{noteId}}", "topics"]
+						}
+					}
+				},
+				{
+					"name": "Get Note Replies",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/notes/{{noteId}}/replies?limit=20&offset=0",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "notes", "{{noteId}}", "replies"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "20"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "💚 Replies (Healer)",
+			"item": [
+				{
+					"name": "Create Reply",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"replyId\", jsonData.data.reply_id);",
+									"    console.log(\"✅ Reply ID saved:\", jsonData.data.reply_id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"note_id\": \"{{noteId}}\",\n  \"content\": \"Thank you for sharing. I hear how difficult this is for you.\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/replies",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "replies"]
+						},
+						"description": "Healer only - requires healer role"
+					}
+				},
+				{
+					"name": "Get All Replies",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/replies?limit=20&offset=0",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "replies"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "20"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Specific Reply",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/replies/{{replyId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "replies", "{{replyId}}"]
+						}
+					}
+				},
+				{
+					"name": "Update Reply (5min window)",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"content\": \"Updated reply content\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/replies/{{replyId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "replies", "{{replyId}}"]
+						},
+						"description": "Can only update within 5 minutes of posting"
+					}
+				},
+				{
+					"name": "Delete Reply",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/replies/{{replyId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "replies", "{{replyId}}"]
+						}
+					}
+				},
+				{
+					"name": "Add Reaction to Reply",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"reaction_type\": \"helpful\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/replies/{{replyId}}/reactions",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "replies", "{{replyId}}", "reactions"]
+						},
+						"description": "reaction_type: like, support, helpful"
+					}
+				},
+				{
+					"name": "Get Reply Reactions",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/replies/{{replyId}}/reactions",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "replies", "{{replyId}}", "reactions"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "📊 Digests & Analytics",
+			"item": [
+				{
+					"name": "Generate Digest",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"digestId\", jsonData.data.digest_id);",
+									"    console.log(\"✅ Digest ID saved:\", jsonData.data.digest_id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"period\": \"weekly\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/digests",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "digests"]
+						},
+						"description": "period: weekly or monthly"
+					}
+				},
+				{
+					"name": "Get User Digests",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/digests?limit=10&offset=0",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "digests"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Specific Digest",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/digests/{{digestId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "digests", "{{digestId}}"]
+						}
+					}
+				},
+				{
+					"name": "Get User Trends",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/digests/users/{{userId}}/trends",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "digests", "users", "{{userId}}", "trends"]
+						}
+					}
+				},
+				{
+					"name": "Get User Metrics",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/digests/users/{{userId}}/metrics",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "digests", "users", "{{userId}}", "metrics"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "🎓 Healer Quiz",
+			"item": [
+				{
+					"name": "Get Quiz Questions",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/quiz/questions",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "quiz", "questions"]
+						}
+					}
+				},
+				{
+					"name": "Take Quiz",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"answers\": [\n    {\"question_id\": \"q1\", \"selected_option_id\": \"opt1\"},\n    {\"question_id\": \"q2\", \"selected_option_id\": \"opt2\"},\n    {\"question_id\": \"q3\", \"selected_option_id\": \"opt3\"},\n    {\"question_id\": \"q4\", \"selected_option_id\": \"opt4\"},\n    {\"question_id\": \"q5\", \"selected_option_id\": \"opt5\"}\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/quiz/take",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "quiz", "take"]
+						},
+						"description": "Need 80% (4/5) to pass"
+					}
+				},
+				{
+					"name": "Get Quiz Status",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/quiz/{{userId}}/status",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "quiz", "{{userId}}", "status"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "👤 User Management",
+			"item": [
+				{
+					"name": "Get User Info",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/users/{{userId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "users", "{{userId}}"]
+						}
+					}
+				},
+				{
+					"name": "Update User Profile",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"newemail@example.com\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/users/{{userId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "users", "{{userId}}"]
+						}
+					}
+				},
+				{
+					"name": "Delete User Account",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/users/{{userId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "users", "{{userId}}"]
+						}
+					}
+				},
+				{
+					"name": "Get User Sessions",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.length > 0) {",
+									"        pm.environment.set(\"sessionId\", jsonData.data[0]._id);",
+									"        console.log(\"✅ Session ID saved:\", jsonData.data[0]._id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/users/{{userId}}/sessions",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "users", "{{userId}}", "sessions"]
+						}
+					}
+				},
+				{
+					"name": "Get User Penalties",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/users/{{userId}}/penalties",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "users", "{{userId}}", "penalties"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "🏥 Health Check",
+			"item": [
+				{
+					"name": "API Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/health",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "health"]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3000",
+			"type": "string"
+		}
+	]
+}

@@ -1,7 +1,7 @@
-import Anthropic from '@anthropic-ai/sdk';
+import OpenAI from 'openai';
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 /**
@@ -41,11 +41,21 @@ Important:
 - DO say "I notice you're feeling..." not "You have..."
 - If user mentions self-harm, respond with empathy and provide crisis resources`;
 
-  // Build conversation history
-  const messages = history.map((msg) => ({
-    role: msg.sender === 'user' ? 'user' : 'assistant',
-    content: msg.content,
-  }));
+  // Build conversation history with system message
+  const messages = [
+    {
+      role: 'system',
+      content: systemPrompt,
+    },
+  ];
+
+  // Add conversation history
+  history.forEach((msg) => {
+    messages.push({
+      role: msg.sender === 'user' ? 'user' : 'assistant',
+      content: msg.content,
+    });
+  });
 
   // Add current message
   messages.push({
@@ -54,14 +64,14 @@ Important:
   });
 
   try {
-    const response = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o-mini', // You can also use 'gpt-4o', 'gpt-4-turbo', or 'gpt-3.5-turbo'
       max_tokens: 500,
-      system: systemPrompt,
+      temperature: 0.7,
       messages: messages,
     });
 
-    return response.content[0].text;
+    return response.choices[0].message.content;
   } catch (error) {
     console.error('AI Service Error:', error);
     throw new Error('Failed to generate Tree response');
