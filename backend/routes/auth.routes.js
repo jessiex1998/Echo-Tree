@@ -30,14 +30,26 @@ router.post('/sessions', loginLimiter, async (req, res, next) => {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
-    res.json({
+    res.status(201).json({
       success: true,
       data: {
         token: result.token,
         user: result.user,
+        session: {
+          sessionId: result.session._id,
+          createdAt: result.session.created_at,
+          expiresAt: result.session.expires_at,
+        },
       },
     });
   } catch (error) {
+    // Handle specific error status codes (401, 423)
+    if (error.status) {
+      return res.status(error.status).json({
+        success: false,
+        error: { message: error.message },
+      });
+    }
     next(error);
   }
 });
@@ -45,16 +57,21 @@ router.post('/sessions', loginLimiter, async (req, res, next) => {
 // Logout
 router.delete('/sessions/:sessionId', authenticateToken, async (req, res, next) => {
   try {
-    await logout(req.params.sessionId);
+    // Verify session ownership
+    await logout(req.params.sessionId, req.user._id);
 
     // Clear cookie
     res.clearCookie('token');
 
-    res.json({
-      success: true,
-      message: 'Logged out successfully',
-    });
+    res.status(204).send();
   } catch (error) {
+    // Handle specific error status codes (404, 403)
+    if (error.status) {
+      return res.status(error.status).json({
+        success: false,
+        error: { message: error.message },
+      });
+    }
     next(error);
   }
 });
@@ -62,12 +79,20 @@ router.delete('/sessions/:sessionId', authenticateToken, async (req, res, next) 
 // Validate session
 router.get('/sessions/:sessionId', authenticateToken, async (req, res, next) => {
   try {
-    const session = await validateSession(req.params.sessionId);
-    res.json({
+    // Verify session ownership
+    const session = await validateSession(req.params.sessionId, req.user._id);
+    res.status(200).json({
       success: true,
       data: session,
     });
   } catch (error) {
+    // Handle specific error status codes (401, 403)
+    if (error.status) {
+      return res.status(error.status).json({
+        success: false,
+        error: { message: error.message },
+      });
+    }
     next(error);
   }
 });

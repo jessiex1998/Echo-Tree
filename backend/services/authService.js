@@ -14,20 +14,26 @@ export async function login(username, password, ipAddress = null, userAgent = nu
   // Find user
   const user = await User.findOne({ username });
   if (!user) {
-    throw new Error('Invalid credentials');
+    const error = new Error('Invalid credentials');
+    error.status = 401;
+    throw error;
   }
 
   // Check if account is locked
   if (user.account_locked_until && user.account_locked_until > new Date()) {
     const minutesLeft = Math.ceil((user.account_locked_until - new Date()) / 60000);
-    throw new Error(`Account is locked. Please try again in ${minutesLeft} minutes.`);
+    const error = new Error(`Account is locked. Please try again in ${minutesLeft} minutes.`);
+    error.status = 423;
+    throw error;
   }
 
   // Verify password
   const isPasswordValid = await user.comparePassword(password);
   if (!isPasswordValid) {
     await user.incrementFailedAttempts();
-    throw new Error('Invalid credentials');
+    const error = new Error('Invalid credentials');
+    error.status = 401;
+    throw error;
   }
 
   // Reset failed attempts on successful login
@@ -72,9 +78,25 @@ export async function login(username, password, ipAddress = null, userAgent = nu
 /**
  * Logout user
  * @param {String} sessionId - Session ID
+ * @param {String} userId - User ID (for ownership verification)
  * @returns {Promise<Boolean>} Success
  */
-export async function logout(sessionId) {
+export async function logout(sessionId, userId = null) {
+  const session = await UserSession.findById(sessionId);
+
+  if (!session) {
+    const error = new Error('Session not found');
+    error.status = 404;
+    throw error;
+  }
+
+  // Verify ownership if userId provided
+  if (userId && session.user_id.toString() !== userId.toString()) {
+    const error = new Error('Unauthorized to delete this session');
+    error.status = 403;
+    throw error;
+  }
+
   await UserSession.findByIdAndDelete(sessionId);
   return true;
 }
@@ -82,20 +104,42 @@ export async function logout(sessionId) {
 /**
  * Validate session
  * @param {String} sessionId - Session ID
- * @returns {Promise<Object>} Session object
+ * @param {String} userId - User ID (optional, for ownership check)
+ * @returns {Promise<Object>} Session object with user info
  */
-export async function validateSession(sessionId) {
-  const session = await UserSession.findById(sessionId);
+export async function validateSession(sessionId, userId = null) {
+  const session = await UserSession.findById(sessionId).populate('user_id', '-password_hash -password_salt');
   if (!session) {
-    throw new Error('Session not found');
+    const error = new Error('Session not found');
+    error.status = 401;
+    throw error;
   }
 
   if (session.expires_at < new Date()) {
     await UserSession.findByIdAndDelete(sessionId);
-    throw new Error('Session expired');
+    const error = new Error('Session expired');
+    error.status = 401;
+    throw error;
   }
 
-  return session;
+  // Check ownership if userId provided
+  if (userId && session.user_id._id.toString() !== userId.toString()) {
+    const error = new Error('Unauthorized to access this session');
+    error.status = 403;
+    throw error;
+  }
+
+  return {
+    sessionId: session._id,
+    userId: session.user_id._id,
+    username: session.user_id.username,
+    role: session.user_id.role,
+    createdAt: session.created_at,
+    expiresAt: session.expires_at,
+    ipAddress: session.ip_address,
+    userAgent: session.user_agent,
+    valid: true,
+  };
 }
 
 /**

@@ -1,8 +1,15 @@
 import OpenAI from 'openai';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Initialize OpenAI client only if API key is available
+let openai = null;
+if (process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== 'your-openai-key') {
+  openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
+  console.log('✅ OpenAI client initialized');
+} else {
+  console.warn('⚠️  OpenAI API key not configured. AI features will use fallback responses.');
+}
 
 /**
  * Generate Tree's response to user message
@@ -63,6 +70,11 @@ Important:
     content: buildUserMessage(currentMessage, mood, energy, feelingLabels),
   });
 
+  // If OpenAI is not configured, return a fallback response
+  if (!openai) {
+    return getFallbackResponse(currentMessage, mood, energy);
+  }
+
   try {
     const response = await openai.chat.completions.create({
       model: 'gpt-4o-mini', // You can also use 'gpt-4o', 'gpt-4-turbo', or 'gpt-3.5-turbo'
@@ -74,8 +86,29 @@ Important:
     return response.choices[0].message.content;
   } catch (error) {
     console.error('AI Service Error:', error);
-    throw new Error('Failed to generate Tree response');
+    // Return fallback on error
+    return getFallbackResponse(currentMessage, mood, energy);
   }
+}
+
+/**
+ * Get fallback response when OpenAI is not available
+ */
+function getFallbackResponse(message, mood, energy) {
+  const responses = [
+    "Thank you for sharing that with me. I'm here to listen. How are you feeling right now?",
+    "I hear you. It takes courage to express what you're going through. Would you like to tell me more?",
+    "I appreciate you opening up. What's on your mind today?",
+    "Thank you for trusting me with your thoughts. How can I support you right now?",
+  ];
+
+  const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+
+  if (mood && mood <= 2) {
+    return "I notice you're feeling quite low right now. I'm here with you. Would you like to share what's weighing on you?";
+  }
+
+  return randomResponse;
 }
 
 /**
